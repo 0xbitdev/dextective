@@ -192,14 +192,17 @@ export default function TokenDetailPage() {
                 </CardContent>
               </Card>
 
-              <Card>
-                <Tabs defaultValue="details" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 p-1">
-                    <TabsTrigger value="details" className="text-sm font-medium">Details</TabsTrigger>
-                    <TabsTrigger value="security" className="text-sm font-medium">Security</TabsTrigger>
-                  </TabsList>
+              {/* Details Card - 1/3 width */}
+              <Card className="md:col-span-1">
+                <Tabs defaultValue="details" className="h-full w-full">
+                  <CardHeader className="pb-2">
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="details" className="text-sm font-medium">Details</TabsTrigger>
+                      <TabsTrigger value="security" className="text-sm font-medium">Security</TabsTrigger>
+                    </TabsList>
+                  </CardHeader>
 
-                  <TabsContent value="details">
+                  <TabsContent value="details" className="mt-0">
                     <CardContent className="space-y-4 pt-2">
                       {/* Contract Address Section */}
                       <div className="space-y-2">
@@ -339,7 +342,7 @@ export default function TokenDetailPage() {
                     </CardContent>
                   </TabsContent>
 
-                  <TabsContent value="security">
+                  <TabsContent value="security" className="mt-0">
                     <CardContent className="space-y-4 pt-2">
                       {/* Overall Security Score */}
                       <div className="space-y-2">
