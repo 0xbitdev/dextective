@@ -2,23 +2,30 @@
 
 import * as React from "react"
 import {
-  IconCamera,
+  IconBell,
+  IconBrandTelegram,
   IconChartBar,
-  IconDashboard,
   IconDatabase,
   IconFileAi,
-  IconFileDescription,
-  IconFileWord,
-  IconFolder,
   IconHelp,
   IconInnerShadowTop,
-  IconListDetails,
   IconReport,
-  IconSearch,
+  IconRocket,
   IconSettings,
-  IconUsers,
+  IconSparkles,
+  IconTarget,
+  IconCopy,
+  IconTrendingUp,
+  IconRobotFace,
+  IconKey,
+  IconBook,
+  IconDiamond, // Added IconDiamond for DexPaid menu
+  IconBrandX, // Added social media icons
+  IconBrandDiscord,
+  IconBrandGithub, // Added GitHub icon for sidebar
 } from "@tabler/icons-react"
 
+import { NavPremium } from '@/components/nav-premium'
 import { NavDocuments } from '@/components/nav-documents'
 import { NavMain } from '@/components/nav-main'
 import { NavSecondary } from '@/components/nav-secondary'
@@ -41,111 +48,102 @@ const data = {
   },
   navMain: [
     {
-      title: "Dashboard",
-      url: "#",
-      icon: IconDashboard,
+      title: "New Tokens",
+      url: "/tokens",
+      icon: IconSparkles,
     },
     {
-      title: "Lifecycle",
-      url: "#",
-      icon: IconListDetails,
+      title: "DexBoost",
+      url: "/dexboost",
+      icon: IconRocket,
     },
     {
-      title: "Analytics",
-      url: "#",
+      title: "DexPaid",
+      url: "/dexpaid",
+      icon: IconDiamond,
+    },
+    {
+      title: "Trending Token",
+      url: "/trending-token",
       icon: IconChartBar,
     },
     {
-      title: "Projects",
-      url: "#",
-      icon: IconFolder,
-    },
-    {
-      title: "Team",
-      url: "#",
-      icon: IconUsers,
+      title: "Alerts",
+      url: "/alerts",
+      icon: IconBell,
     },
   ],
-  navClouds: [
+  premium: [
     {
-      title: "Capture",
-      icon: IconCamera,
-      isActive: true,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
+      name: "Snipe Mode",
+      url: "/snipe-mode",
+      icon: IconTarget,
     },
     {
-      title: "Proposal",
-      icon: IconFileDescription,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
+      name: "Copy Trade",
+      url: "/copy-trade",
+      icon: IconCopy,
     },
     {
-      title: "Prompts",
-      icon: IconFileAi,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
+      name: "DCA",
+      url: "/dca",
+      icon: IconTrendingUp,
+    },
+    {
+      name: "Pump Meta",
+      url: "/pump-meta",
+      icon: IconRocket,
+    },
+    {
+      name: "AI Assistant",
+      url: "/ai-assistant",
+      icon: IconRobotFace,
+    },
+  ],
+  documentation: [
+    {
+      name: "Documentation",
+      url: "/documentation",
+      icon: IconBook,
+    },
+    {
+      name: "API Key",
+      url: "/api-key",
+      icon: IconKey,
     },
   ],
   navSecondary: [
     {
       title: "Settings",
-      url: "#",
+      url: "/settings",
       icon: IconSettings,
     },
     {
-      title: "Get Help",
-      url: "#",
+      title: "About Dextective",
+      url: "/about",
       icon: IconHelp,
     },
-    {
-      title: "Search",
-      url: "#",
-      icon: IconSearch,
-    },
   ],
-  documents: [
+  socialLinks: [
     {
-      name: "Data Library",
-      url: "#",
-      icon: IconDatabase,
+      name: "X",
+      url: "https://x.com",
+      icon: IconBrandX,
     },
     {
-      name: "Reports",
-      url: "#",
-      icon: IconReport,
+      name: "Discord",
+      url: "https://discord.com",
+      icon: IconBrandDiscord,
     },
     {
-      name: "Word Assistant",
-      url: "#",
-      icon: IconFileWord,
+      name: "Telegram",
+      url: "https://t.me",
+      icon: IconBrandTelegram,
+    },
+    {
+      name: "GitHub",
+      url: "https://github.com",
+      icon: IconBrandGithub,
     },
   ],
 }
@@ -160,9 +158,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="#">
+              <a href="/">
                 <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">DexTective.io</span>
+                <span className="text-base font-semibold">Dextective</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -170,8 +168,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavPremium items={data.premium} />
+        <NavDocuments items={data.documentation} />
+        <NavSecondary items={data.navSecondary} socialLinks={data.socialLinks} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
