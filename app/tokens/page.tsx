@@ -5,6 +5,7 @@ import Link from "next/link"
 import { IconBrandTelegram, IconBrandX, IconGlobe, IconX, IconCopy } from "@tabler/icons-react"
 import { toast } from "sonner"
 import { useWallet } from '@solana/wallet-adapter-react'
+import { useRouter } from 'next/navigation'
 
 import { AppSidebar } from '@/components/app-sidebar'
 import { SiteHeader } from '@/components/site-header'
@@ -88,6 +89,7 @@ const launchpads = [
 
 export default function TokensPage() {
   const { publicKey } = useWallet()
+  const router = useRouter()
   const [selectedLaunchpad, setSelectedLaunchpad] = React.useState("All")
   const [searchQuery, setSearchQuery] = React.useState("")
   const [tokens, setTokens] = React.useState<Token[]>(() =>
@@ -283,17 +285,15 @@ export default function TokensPage() {
                     {filteredTokens.map((token) => (
                       <TableRow
                         key={token.id}
-                        className={`cursor-pointer transition-colors ${
+                        onClick={() => router.push(`/tokens/${token.id}`)}
+                        className={`cursor-pointer transition-colors hover:bg-muted/50 ${
                           token.isNew
                             ? "animate-fade-in-down bg-primary/10"
                             : ""
                         }`}
                       >
                         <TableCell>
-                          <Link
-                            href={`/tokens/${token.id}`}
-                            className="flex items-center gap-3"
-                          >
+                          <div className="flex items-center gap-3">
                             <img
                               src={token.logo || "/placeholder.svg"}
                               alt={token.name}
@@ -305,12 +305,10 @@ export default function TokensPage() {
                                 {token.symbol}
                               </div>
                             </div>
-                          </Link>
+                          </div>
                         </TableCell>
                         <TableCell>
-                          <Link href={`/tokens/${token.id}`}>
-                            <Badge variant="outline">{token.launchpad}</Badge>
-                          </Link>
+                          <Badge variant="outline">{token.launchpad}</Badge>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
@@ -331,40 +329,32 @@ export default function TokensPage() {
                           </div>
                         </TableCell>
                         <TableCell className="text-right font-mono">
-                          <Link href={`/tokens/${token.id}`}>{token.price}</Link>
+                          {token.price}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Link href={`/tokens/${token.id}`}>
-                            <Badge
-                              variant="outline"
-                              className={
-                                token.change24h >= 0
-                                  ? "border-green-500/50 text-green-600 dark:text-green-400"
-                                  : "border-red-500/50 text-red-600 dark:text-red-400"
-                              }
-                            >
-                              {token.change24h >= 0 ? "+" : ""}
-                              {token.change24h.toFixed(2)}%
-                            </Badge>
-                          </Link>
+                          <Badge
+                            variant="outline"
+                            className={
+                              token.change24h >= 0
+                                ? "border-green-500/50 text-green-600 dark:text-green-400"
+                                : "border-red-500/50 text-red-600 dark:text-red-400"
+                            }
+                          >
+                            {token.change24h >= 0 ? "+" : ""}
+                            {token.change24h.toFixed(2)}%
+                          </Badge>
                         </TableCell>
                         <TableCell className="text-right font-mono">
-                          <Link href={`/tokens/${token.id}`}>{token.volume}</Link>
+                          {token.volume}
                         </TableCell>
                         <TableCell className="text-right font-mono">
-                          <Link href={`/tokens/${token.id}`}>
-                            {token.liquidity}
-                          </Link>
+                          {token.liquidity}
                         </TableCell>
                         <TableCell className="text-right font-mono">
-                          <Link href={`/tokens/${token.id}`}>
-                            {token.marketCap}
-                          </Link>
+                          {token.marketCap}
                         </TableCell>
                         <TableCell>
-                          <Link href={`/tokens/${token.id}`}>
-                            <Badge variant="secondary">{token.age}</Badge>
-                          </Link>
+                          <Badge variant="secondary">{token.age}</Badge>
                         </TableCell>
                         <TableCell>
                           <div
