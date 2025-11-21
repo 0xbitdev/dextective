@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import { useRouter } from 'next/navigation'
 import { IconBrandTelegram, IconWorld, IconBrandX, IconCopy } from "@tabler/icons-react"
 import { AppSidebar } from '@/components/app-sidebar'
@@ -15,22 +15,134 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
-const mockTrendingTokens = [
-  { id: "1", name: "Bitcoin", symbol: "BTC", price: "$45,234.00", change: "+5.2%", volume: "$28.5B", marketCap: "$890B", chain: "Bitcoin", logo: "https://cryptologos.cc/logos/bitcoin-btc-logo.png", contractAddress: "abc...xyz" },
-  { id: "2", name: "Ethereum", symbol: "ETH", price: "$3,234.00", change: "+3.8%", volume: "$15.2B", marketCap: "$390B", chain: "Ethereum", logo: "https://cryptologos.cc/logos/ethereum-eth-logo.png", contractAddress: "def...uvw" },
-  { id: "3", name: "Solana", symbol: "SOL", price: "$132.00", change: "+12.5%", volume: "$4.8B", marketCap: "$58B", chain: "Solana", logo: "https://cryptologos.cc/logos/solana-sol-logo.png", contractAddress: "ghi...rst" },
-  { id: "4", name: "Cardano", symbol: "ADA", price: "$0.52", change: "+7.3%", volume: "$1.2B", marketCap: "$18B", chain: "Cardano", logo: "https://cryptologos.cc/logos/cardano-ada-logo.png", contractAddress: "jkl...pqr" },
-  { id: "5", name: "Polygon", symbol: "MATIC", price: "$0.88", change: "+4.1%", volume: "$890M", marketCap: "$8.2B", chain: "Polygon", logo: "https://cryptologos.cc/logos/polygon-matic-logo.png", contractAddress: "mno...opq" },
-  { id: "6", name: "Avalanche", symbol: "AVAX", price: "$38.20", change: "+6.9%", volume: "$1.5B", marketCap: "$14B", chain: "Avalanche", logo: "https://cryptologos.cc/logos/avalanche-avax-logo.png", contractAddress: "pqr...lmn" },
-  { id: "7", name: "Chainlink", symbol: "LINK", price: "$15.40", change: "+8.2%", volume: "$1.1B", marketCap: "$8.8B", chain: "Ethereum", logo: "https://cryptologos.cc/logos/chainlink-link-logo.png", contractAddress: "stu...ijk" },
-  { id: "8", name: "Uniswap", symbol: "UNI", price: "$6.80", change: "+3.5%", volume: "$650M", marketCap: "$5.2B", chain: "Ethereum", logo: "https://cryptologos.cc/logos/uniswap-uni-logo.png", contractAddress: "vwx...ghi" },
-]
+type TrendingToken = {
+  id: string
+  name: string
+  symbol: string
+  contractAddress: string
+  logo: string
+  price: string
+  marketCap: string
+  website?: string
+  twitter?: string
+  telegram?: string
+  chain: string
+}
+
+const POLL_INTERVAL = 5000
 
 export default function WatchlistPage() {
   const [searchQuery, setSearchQuery] = useState("")
+  const [tokens, setTokens] = useState<TrendingToken[]>([])
   const router = useRouter()
 
-  const filteredTokens = mockTrendingTokens.filter(token =>
+  const truncateAddress = (addr?: string) => {
+    if (!addr) return ''
+    if (addr.length <= 10) return addr
+    return `${addr.slice(0,4)}.....${addr.slice(-5)}`
+  }
+
+  const formatShortNumber = (value?: number | string, opts?: { currency?: boolean }) => {
+    if (value === undefined || value === null || value === '') return '—'
+    const num = typeof value === 'number' ? value : Number(String(value).replace(/[^0-9.-]+/g, ''))
+    if (!isFinite(num)) return '—'
+    const abs = Math.abs(num)
+    let formatted = ''
+    if (abs >= 1_000_000_000) {
+      formatted = `${(num / 1_000_000_000).toFixed(2).replace(/\.00$/, '')}B`
+    } else if (abs >= 1_000_000) {
+      formatted = `${(num / 1_000_000).toFixed(2).replace(/\.00$/, '')}M`
+    } else if (abs >= 1_000) {
+      formatted = `${(num / 1_000).toFixed(2).replace(/\.00$/, '')}K`
+    } else {
+      formatted = `${num.toFixed(2).replace(/\.00$/, '')}`
+    }
+    return opts?.currency ? `$${formatted}` : formatted
+  }
+
+  const formatAge = (ts?: number) => {
+    if (!ts) return '—'
+    const diff = Date.now() - ts
+    const sec = Math.floor(diff / 1000)
+    if (sec < 60) return `${sec}s ago`
+    const min = Math.floor(sec / 60)
+    if (min < 60) return `${min}m ago`
+    const hr = Math.floor(min / 60)
+    if (hr < 24) return `${hr}h ago`
+    const day = Math.floor(hr / 24)
+    return `${day}d ago`
+  }
+
+  const computePriceFromReserves = (virtualSol?: number | string, virtualToken?: number | string) => {
+    const vs = Number(virtualSol ?? 0)
+    const vt = Number(virtualToken ?? 0)
+    if (!isFinite(vs) || !isFinite(vt) || vt === 0) return null
+    const p = vs / vt
+    if (Math.abs(p) < 0.0001) return `${p.toExponential(3)} SOL`
+    if (Math.abs(p) < 1) return `${p.toFixed(6)} SOL`
+    return `${formatShortNumber(p)} SOL`
+  }
+
+  const normalizeSocialUrl = (value?: string, type?: 'twitter' | 'telegram' | 'website') => {
+    if (!value) return ''
+    const v = value.trim()
+    if (/^https?:\/\//i.test(v)) return v
+    if (type === 'twitter') {
+      const handle = v.replace(/^@/, '')
+      if (handle.includes('twitter.com')) return `https://${handle.replace(/^https?:\/\//, '')}`
+      return `https://twitter.com/${handle}`
+    }
+    if (type === 'telegram') {
+      const handle = v.replace(/^@/, '')
+      if (handle.includes('t.me') || handle.includes('telegram')) return `https://${handle.replace(/^https?:\/\//, '')}`
+      return `https://t.me/${handle}`
+    }
+    if (/^[a-z0-9.-]+\./i.test(v)) return `https://${v}`
+    return v
+  }
+
+  const mapItem = (item: any): TrendingToken => {
+    const c = item?.coin ?? item ?? {}
+    const market = typeof c.market_cap === 'number' ? c.market_cap : Number(c.market_cap || 0)
+    const usd = typeof c.usd_market_cap === 'number' ? c.usd_market_cap : Number(c.usd_market_cap || 0)
+    const priceFromRes = computePriceFromReserves(c.virtual_sol_reserves, c.virtual_token_reserves)
+    const price = priceFromRes ?? (isFinite(usd) ? formatShortNumber(usd, { currency: true }) : '—')
+    const marketCap = isFinite(market) ? formatShortNumber(market, { currency: true }) : '—'
+    return {
+      id: c.mint,
+      name: c.name || 'Unknown',
+      symbol: c.symbol || '—',
+      contractAddress: c.mint,
+      logo: c.image_uri || '/placeholder.svg',
+      price,
+      marketCap,
+      website: normalizeSocialUrl(c.website || c.site_url || c.website_url, 'website'),
+      twitter: normalizeSocialUrl(c.twitter || c.twitter_handle, 'twitter'),
+      telegram: normalizeSocialUrl(c.telegram || c.telegram_handle, 'telegram'),
+      chain: 'Solana',
+    }
+  }
+
+  const fetchTrending = async () => {
+    try {
+      const res = await fetch('/api/token/trending')
+      if (!res.ok) return
+      const json = await res.json()
+      const arr = Array.isArray(json?.data) ? json.data : []
+      const mapped = arr.map(mapItem)
+      setTokens(mapped)
+    } catch (err) {
+      console.warn('Failed to fetch trending:', err)
+    }
+  }
+
+  React.useEffect(() => {
+    fetchTrending()
+    const iv = setInterval(fetchTrending, POLL_INTERVAL)
+    return () => clearInterval(iv)
+  }, [])
+
+  const filteredTokens = tokens.filter(token =>
     token.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     token.symbol.toLowerCase().includes(searchQuery.toLowerCase())
   )
@@ -74,8 +186,6 @@ export default function WatchlistPage() {
                       <TableHead>Symbol</TableHead>
                       <TableHead>CA</TableHead>
                       <TableHead>Price</TableHead>
-                      <TableHead>24h Change</TableHead>
-                      <TableHead>24h Volume</TableHead>
                       <TableHead>Market Cap</TableHead>
                       <TableHead>Chain</TableHead>
                       <TableHead className="text-right">Social Media</TableHead>
@@ -103,8 +213,20 @@ export default function WatchlistPage() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                            <span className="font-mono text-xs text-muted-foreground">
-                              {token.contractAddress}
+                            <span
+                              className="font-mono text-xs text-muted-foreground cursor-pointer"
+                              title={token.contractAddress ? "Click to copy address" : ""}
+                              role="button"
+                              aria-label={token.contractAddress ? `Copy contract address ${token.contractAddress}` : undefined}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                if (token.contractAddress) {
+                                  navigator.clipboard.writeText(token.contractAddress)
+                                  toast.success("Contract address copied!")
+                                }
+                              }}
+                            >
+                              {truncateAddress(token.contractAddress)}
                             </span>
                             <Button
                               variant="ghost"
@@ -119,25 +241,11 @@ export default function WatchlistPage() {
                             </Button>
                           </div>
                         </TableCell>
-                        <TableCell className="text-lg font-bold">
+                        <TableCell className="text-xs font-bold">
                           {token.price}
                         </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant="outline"
-                            className={
-                              token.change.startsWith("+")
-                                ? "border-green-600/20 bg-green-600/10 text-green-600 dark:text-green-400"
-                                : "border-red-600/20 bg-red-600/10 text-red-600 dark:text-red-400"
-                            }
-                          >
-                            {token.change}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-lg font-bold">
-                          {token.volume}
-                        </TableCell>
-                        <TableCell className="text-lg font-bold">
+                        
+                        <TableCell className="text-xs font-bold">
                           {token.marketCap}
                         </TableCell>
                         <TableCell>
@@ -145,36 +253,44 @@ export default function WatchlistPage() {
                         </TableCell>
                         <TableCell>
                           <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="size-8"
-                              asChild
-                            >
-                              <a href="#" target="_blank" rel="noopener noreferrer">
+                            {/** Website button: disabled when no URL */}
+                            {token.website ? (
+                              <Button variant="ghost" size="icon" className="size-8" asChild>
+                                <a href={token.website} target="_blank" rel="noopener noreferrer">
+                                  <IconWorld className="size-4" />
+                                </a>
+                              </Button>
+                            ) : (
+                              <Button variant="ghost" size="icon" className="size-8" disabled aria-hidden>
                                 <IconWorld className="size-4" />
-                              </a>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="size-8"
-                              asChild
-                            >
-                              <a href="#" target="_blank" rel="noopener noreferrer">
+                              </Button>
+                            )}
+
+                            {/** Twitter / X button: disabled when no URL */}
+                            {token.twitter ? (
+                              <Button variant="ghost" size="icon" className="size-8" asChild>
+                                <a href={token.twitter} target="_blank" rel="noopener noreferrer">
+                                  <IconBrandX className="size-4" />
+                                </a>
+                              </Button>
+                            ) : (
+                              <Button variant="ghost" size="icon" className="size-8" disabled aria-hidden>
                                 <IconBrandX className="size-4" />
-                              </a>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="size-8"
-                              asChild
-                            >
-                              <a href="#" target="_blank" rel="noopener noreferrer">
+                              </Button>
+                            )}
+
+                            {/** Telegram button: disabled when no URL */}
+                            {token.telegram ? (
+                              <Button variant="ghost" size="icon" className="size-8" asChild>
+                                <a href={token.telegram} target="_blank" rel="noopener noreferrer">
+                                  <IconBrandTelegram className="size-4" />
+                                </a>
+                              </Button>
+                            ) : (
+                              <Button variant="ghost" size="icon" className="size-8" disabled aria-hidden>
                                 <IconBrandTelegram className="size-4" />
-                              </a>
-                            </Button>
+                              </Button>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>
@@ -186,7 +302,7 @@ export default function WatchlistPage() {
               {/* Pagination */}
               <div className="flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">
-                  Showing {filteredTokens.length} of {mockTrendingTokens.length} tokens
+                  Showing {filteredTokens.length} of {tokens.length} tokens
                 </p>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" disabled>

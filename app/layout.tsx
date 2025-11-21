@@ -11,10 +11,9 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: 'Dextective',
-  description: 'Detective Dashboard Application',
-  generator: 'v0.app',
+  description: 'Detective Dashboard Application', 
   icons: {
-    icon: '/icon.svg',
+    icon: '/favicon.jpg',
   },
 }
 
