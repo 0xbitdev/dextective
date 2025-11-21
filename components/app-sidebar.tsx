@@ -44,7 +44,7 @@ const data = {
   user: {
     name: "shadcn",
     email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
+    avatar: "/favicon.jpg",
   },
   navMain: [
     {
@@ -163,8 +163,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="/">
-                <IconInnerShadowTop className="!size-5" />
+              <a href="/" className="flex items-center gap-2">
+                <img src="/favicon.jpg" alt="DexLite" className="w-5 h-5 rounded" />
                 <span className="text-base font-semibold">DexLite</span>
               </a>
             </SidebarMenuButton>

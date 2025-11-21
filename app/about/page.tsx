@@ -32,7 +32,7 @@ import Image from 'next/image' // Added for Integrated Launchpads
 
 export default function AboutPage() {
   const [copied, setCopied] = useState(false)
-  const contractAddress = "xxxxxxxxxxxxxxxxxxpump" // Replace with actual contract address
+  const contractAddress = "6Z5qEoiWMsjz95R7g61axKMMYzvaUZAzpTDfVTBupump" // Replace with actual contract address
 
   const handleCopy = () => {
     navigator.clipboard.writeText(contractAddress)
@@ -52,14 +52,14 @@ export default function AboutPage() {
               <div className="flex items-center gap-3 mb-4">
                 <IconInnerShadowTop className="size-12 text-primary" />
                 <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                  Dextective
+                  Dexlite
                 </h1>
               </div>
               <p className="text-xl lg:text-2xl text-muted-foreground max-w-3xl mb-6">
                 Your Ultimate Solana Trading Intelligence Platform
               </p>
               <p className="text-base text-muted-foreground max-w-4xl leading-relaxed">
-                DexTective is a comprehensive, real-time crypto trading analytics and automation platform built specifically for the Solana ecosystem.
+                Dexlite is a comprehensive, real-time crypto trading analytics and automation platform built specifically for the Solana ecosystem.
                 We empower traders with cutting-edge tools to discover new token launches, monitor trending assets, execute automated trading strategies,
                 and make data-driven decisions with confidence.
               </p>
@@ -415,7 +415,7 @@ export default function AboutPage() {
               <div>
                 <h4 className="font-semibold text-foreground mb-2">Smart Contract Auditing</h4>
                 <p className="leading-relaxed">
-                  Every token listed on DexTective undergoes automated security scanning for common vulnerabilities including honeypot
+                  Every token listed on Dexlite undergoes automated security scanning for common vulnerabilities including honeypot
                   detection, mint authority status, freeze authority checks, ownership renouncement verification, and liquidity lock analysis.
                   Our multi-layered audit system provides risk scores and detailed reports for informed decision-making.
                 </p>
@@ -433,7 +433,7 @@ export default function AboutPage() {
               <div>
                 <h4 className="font-semibold text-foreground mb-2">Wallet Security</h4>
                 <p className="leading-relaxed">
-                  DexTective never stores your private keys or has access to your funds. We integrate with industry-standard Solana wallets
+                  Dexlite never stores your private keys or has access to your funds. We integrate with industry-standard Solana wallets
                   (Phantom, Solflare, Torus) using secure wallet adapter protocols. All trading bot integrations use API keys with
                   permission-based access controls, and we support hardware wallet integration for maximum security.
                 </p>
@@ -442,7 +442,7 @@ export default function AboutPage() {
               <div>
                 <h4 className="font-semibold text-foreground mb-2">API & Developer Access</h4>
                 <p className="leading-relaxed">
-                  Comprehensive REST API and WebSocket feeds for developers building on top of DexTective. Access the same data and
+                  Comprehensive REST API and WebSocket feeds for developers building on top of Dexlite. Access the same data and
                   functionality that powers our platform with generous rate limits and detailed documentation. Enterprise plans include
                   dedicated support, custom endpoints, and priority infrastructure access.
                 </p>
@@ -582,7 +582,7 @@ export default function AboutPage() {
                   <ul className="space-y-1 text-sm text-muted-foreground">
                     <li className="flex items-center gap-2">
                       <IconArrowRight className="size-4 text-muted-foreground" />
-                      DexTective V2 with enhanced UI/UX
+                      Dexlite V2 with enhanced UI/UX
                     </li>
                     <li className="flex items-center gap-2">
                       <IconArrowRight className="size-4 text-muted-foreground" />
@@ -742,7 +742,7 @@ export default function AboutPage() {
 
               <div className="mt-6 p-4 rounded-lg bg-muted/50">
                 <p className="text-sm text-muted-foreground text-center">
-                  DexTective aggregates data from all major Solana launchpads and DEXs in real-time,
+                  Dexlite aggregates data from all major Solana launchpads and DEXs in real-time,
                   giving you comprehensive market coverage and the fastest token detection in the ecosystem.
                 </p>
               </div>
@@ -858,19 +858,19 @@ export default function AboutPage() {
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <h4 className="font-semibold mb-2">General Inquiries</h4>
-                  <p className="text-sm text-muted-foreground">hello@dextective.io</p>
+                  <p className="text-sm text-muted-foreground">hello@Dexlite.io</p>
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2">Technical Support</h4>
-                  <p className="text-sm text-muted-foreground">support@dextective.io</p>
+                  <p className="text-sm text-muted-foreground">support@Dexlite.io</p>
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2">Partnership Inquiries</h4>
-                  <p className="text-sm text-muted-foreground">partnerships@dextective.io</p>
+                  <p className="text-sm text-muted-foreground">partnerships@Dexlite.io</p>
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2">Developer API</h4>
-                  <p className="text-sm text-muted-foreground">api@dextective.io</p>
+                  <p className="text-sm text-muted-foreground">api@Dexlite.io</p>
                 </div>
               </div>
 
@@ -879,7 +879,7 @@ export default function AboutPage() {
               <div>
                 <h4 className="font-semibold mb-2">Documentation</h4>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Comprehensive guides, API references, and tutorials to help you get the most out of DexTective.
+                  Comprehensive guides, API references, and tutorials to help you get the most out of Dexlite.
                 </p>
                 <Button variant="outline" asChild>
                   <a href="/documentation">
@@ -892,7 +892,7 @@ export default function AboutPage() {
 
           {/* Footer Note */}
           <div className="text-center text-sm text-muted-foreground">
-            <p>DexTective © 2025. All rights reserved.</p>
+            <p>Dexlite © 2025. All rights reserved.</p>
             <p className="mt-1">Built with ❤️ for the Solana community</p>
           </div>
         </div>

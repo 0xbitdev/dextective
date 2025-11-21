@@ -279,12 +279,14 @@ export default function TokenDetailPage() {
                 </CardHeader>
                 <CardContent className="p-0">
                   {mintAddress ? (
-                    <div className="relative h-[500px] w-full">
+                    <div className="relative h-[800px] w-full">
                       <iframe
-                        src={`https://www.dexscreener.com/solana/${encodeURIComponent(mintAddress)}?embed=true`}
+                        src={`https://www.dexscreener.com/solana/${encodeURIComponent(mintAddress)}?embed=1&info=0&theme=dark`}
                         title="DEXscreener chart"
                         className="absolute inset-0 w-full h-full border-0 rounded"
                       />
+                      {/* Overlay to visually hide the DEXscreener bottom branding bar */}
+                      <div className="absolute left-0 right-0 bottom-0 h-14 bg-black z-20 pointer-events-none rounded-b" />
                     </div>
                   ) : (
                     <div className="h-[200px] flex items-center justify-center text-sm text-muted-foreground">
