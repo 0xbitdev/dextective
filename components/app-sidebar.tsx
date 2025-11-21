@@ -119,7 +119,7 @@ const data = {
       icon: IconSettings,
     },
     {
-      title: "About Dextective",
+      title: "About DexLite",
       url: "/about",
       icon: IconHelp,
     },
@@ -127,7 +127,7 @@ const data = {
   socialLinks: [
     {
       name: "X",
-      url: "https://x.com",
+      url: "https://x.com/DexliteApp",
       icon: IconBrandX,
     },
     {
@@ -160,7 +160,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             >
               <a href="/">
                 <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">Dextective</span>
+                <span className="text-base font-semibold">DexLite</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>

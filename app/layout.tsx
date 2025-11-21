@@ -10,8 +10,8 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Dextective',
-  description: 'Detective Dashboard Application', 
+  title: 'DexLite',
+  description: 'DexLite Dashboard Application', 
   icons: {
     icon: '/favicon.jpg',
   },

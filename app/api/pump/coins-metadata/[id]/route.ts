@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(_: Request, context: { params: { id: string } }) {
+  const { params } = await context;
   const { id } = params
   const base = process.env.PUMP_API
   if (!base) {

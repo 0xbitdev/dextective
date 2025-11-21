@@ -16,42 +16,13 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs' 
 // Chart components removed — using DEXscreener iframe instead
 import { Separator } from '@/components/ui/separator'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import { toast } from 'sonner'
-
-// Chart data removed — DEXscreener iframe is used instead
-
-const generateNewTransaction = () => {
-  const types = ["BUY", "SELL"]
-  const type = types[Math.floor(Math.random() * types.length)]
-  const sol = (Math.random() * 10 + 0.5).toFixed(1)
-  const tokens = (parseFloat(sol) * 2380).toFixed(0)
-  const price = `$0.000${(Math.random() * 100 + 10).toFixed(0)}`
-  
-  return {
-    id: Date.now(),
-    type,
-    hash: `${Math.random().toString(36).substring(2, 6).toUpperCase()}...${Math.random().toString(36).substring(2, 6)}`,
-    wallet: `${Math.random().toString(36).substring(2, 6).toUpperCase()}...${Math.random().toString(36).substring(2, 6)}`,
-    sol,
-    tokens: tokens.replace(/\B(?=(\d{3})+(?!\d))/g, ","),
-    price,
-    time: "Just now",
-    isNew: true
-  }
-}
+ 
 
 export default function TokenDetailPage() {
   const [transactions, setTransactions] = useState([
@@ -68,9 +39,32 @@ export default function TokenDetailPage() {
 
   const [meta, setMeta] = useState<any>(null)
   const [loadingMeta, setLoadingMeta] = useState(false)
-  const [iframeLoaded, setIframeLoaded] = useState(false)
   const [marketActivity, setMarketActivity] = useState<any>(null)
-  const [loadingMarketActivity, setLoadingMarketActivity] = useState(false)
+  const [loadingMarketActivity, setLoadingMarketActivity] = useState(false) 
+  // Dexscreener state
+  const [dexData, setDexData] = useState<any>(null)
+  const [loadingDex, setLoadingDex] = useState(false)
+  const [errorDex, setErrorDex] = useState(false)
+
+  useEffect(() => {
+    if (!mintAddress) return
+    let mounted = true
+    setLoadingDex(true)
+    setErrorDex(false)
+    fetch(`https://api.dexscreener.com/latest/dex/search?q=${mintAddress}`)
+      .then(res => res.json())
+      .then(json => {
+        if (!mounted) return
+        setDexData(json?.pairs?.[0] ?? null)
+      })
+      .catch(() => {
+        if (mounted) setErrorDex(true)
+      })
+      .finally(() => {
+        if (mounted) setLoadingDex(false)
+      })
+    return () => { mounted = false }
+  }, [mintAddress])
 
   const activityFor = (period: '5m' | '1h' | '6h' | '24h') => {
     // Pump market-activity returns data[0] with keys '5m','1h','6h','24h'
@@ -173,7 +167,52 @@ export default function TokenDetailPage() {
     setTimeout(() => setCopiedCA(false), 2000)
   }
 
-   
+   const PRICE_CHART_ID = 'price-chart-widget-container';
+    const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const loadWidget = () => {
+      const w: any = window as any
+      if (typeof w.createMyWidget === 'function') {
+        w.createMyWidget(PRICE_CHART_ID, {
+          autoSize: true,
+          chainId: 'solana',
+          tokenAddress: contractAddress,
+          showHoldersChart: true,
+          defaultInterval: '1D',
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Etc/UTC',
+          theme: 'moralis',
+          locale: 'en',
+          showCurrencyToggle: true,
+          currency: 'usd',
+          hideLeftToolbar: false,
+          hideTopToolbar: false,
+          hideBottomToolbar: false
+        });
+      } else {
+        console.error('createMyWidget function is not defined.');
+      }
+    };
+
+    if (!document.getElementById('moralis-chart-widget')) {
+      const script = document.createElement('script');
+      script.id = 'moralis-chart-widget';
+      script.src = 'https://moralis.com/static/embed/chart.js';
+      script.type = 'text/javascript';
+      script.async = true;
+      script.onload = loadWidget;
+      script.onerror = () => {
+        console.error('Failed to load the chart widget script.');
+      };
+      document.body.appendChild(script);
+    } else {
+      loadWidget();
+    }
+  }, []);
+
+  const isLoadingAll = loadingMeta || loadingMarketActivity || loadingDex
 
   return (
     <SidebarProvider
@@ -187,7 +226,15 @@ export default function TokenDetailPage() {
       <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeader />
-        <div className="flex flex-1 flex-col">
+        <div className="relative flex flex-1 flex-col">
+          {isLoadingAll && (
+            <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/70 dark:bg-black/60">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-12 h-12 rounded-full border-4 border-gray-200 border-t-transparent animate-spin" />
+                <p className="text-sm text-muted-foreground">Loading data...</p>
+              </div>
+            </div>
+          )}
           <div className="@container/main flex flex-1 flex-col gap-4 p-4 md:gap-6 md:p-6">
             {/* Header */}
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -268,27 +315,20 @@ export default function TokenDetailPage() {
             {/* Main Content Grid */}
             <div className="grid gap-4 md:grid-cols-3">
               {/* Chart - 2/3 width */}
-              <Card className="md:col-span-2">
-                <CardHeader>
-                  <CardTitle>24-Hour Price Chart</CardTitle>
-                  <CardDescription>Candlestick chart with OHLC data</CardDescription>
-                </CardHeader>
-                <CardContent className="p-0">
-                  {mintAddress ? (
-                    <div className="relative h-[500px] w-full">
-                      <iframe
-                        src={`https://www.dexscreener.com/solana/${encodeURIComponent(mintAddress)}?embed=true`}
-                        title="DEXscreener chart"
-                        className="absolute inset-0 w-full h-full border-0 rounded"
-                        onLoad={() => setIframeLoaded(true)}
-                      />
-                    </div>
-                  ) : (
-                    <div className="h-[200px] flex items-center justify-center text-sm text-muted-foreground">
-                      No chart available
-                    </div>
-                  )}
-                </CardContent>
+              <Card className="md:col-span-2 h-full flex">
+                {mintAddress ? (
+                  <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
+                    <div
+                      id={PRICE_CHART_ID}
+                      ref={containerRef}
+                      className="w-full h-full"
+                    />
+                  </div>
+                ) : (
+                  <div className="h-[200px] flex items-center justify-center text-sm text-muted-foreground">
+                    No chart available
+                  </div>
+                )}
               </Card>
 
               {/* Details Card - 1/3 width */}
@@ -328,25 +368,25 @@ export default function TokenDetailPage() {
                       <Separator />
 
                       {/* Price Section */}
+
+                      {/* Dexscreener Data Section */}
                       <div className="space-y-3">
                         <h3 className="text-sm font-semibold">Price</h3>
                         <div className="space-y-2">
                           <div>
                             <p className="text-[10px] text-muted-foreground">PRICE USD</p>
                             <div className="flex items-baseline gap-2">
-                              <p className="text-lg font-bold">$0.00012</p>
-                              <Badge variant="outline" className="border-green-600/20 bg-green-600/10 text-[10px] text-green-600">
-                                +45.2%
-                              </Badge>
+                              <p className="text-lg font-bold">
+                                {loadingDex ? 'Loading...' : (dexData?.priceUsd ? `$${Number(dexData.priceUsd).toLocaleString('en-US', { maximumFractionDigits: 8 })}` : '—')}
+                              </p>
                             </div>
                           </div>
                           <div>
                             <p className="text-[10px] text-muted-foreground">PRICE SOL</p>
                             <div className="flex items-baseline gap-2">
-                              <p className="text-sm font-bold">0.00092 SOL</p>
-                              <Badge variant="outline" className="border-green-600/20 bg-green-600/10 text-[10px] text-green-600">
-                                +42.8%
-                              </Badge>
+                              <p className="text-sm font-bold">
+                                {loadingDex ? 'Loading...' : (dexData?.priceNative ? `${Number(dexData.priceNative).toLocaleString('en-US', { maximumFractionDigits: 8 })} SOL` : '—')}
+                              </p>
                             </div>
                           </div>
                         </div>
@@ -354,50 +394,52 @@ export default function TokenDetailPage() {
 
                       <Separator />
 
-                      {/* Market Data Section */}
                       <div className="space-y-3">
                         <h3 className="text-sm font-semibold">Market Data</h3>
                         <div className="space-y-1.5 text-xs">
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Liquidity</span>
-                            <span className="font-semibold">$850K</span>
-                          </div>
-                          <div className="flex justify-between">
                             <span className="text-muted-foreground">Market Cap</span>
-                            <span className="font-semibold">$12.5M</span>
+                            <span className="font-semibold">
+                              {loadingDex ? 'Loading...' : (dexData?.marketCap ? `$${Number(dexData.marketCap).toLocaleString('en-US', { maximumFractionDigits: 2 })}` : '—')}
+                            </span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">FDV</span>
-                            <span className="font-semibold">$15.8M</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Holders</span>
-                            <span className="font-semibold">2,847</span>
+                            <span className="font-semibold">
+                              {loadingDex ? 'Loading...' : (dexData?.fdv ? `$${Number(dexData.fdv).toLocaleString('en-US', { maximumFractionDigits: 2 })}` : '—')}
+                            </span>
                           </div>
                         </div>
                       </div>
 
                       <Separator />
 
-                      {/* Volume Section */}
                       <div className="space-y-3">
                         <h3 className="text-sm font-semibold">Volume</h3>
                         <div className="grid grid-cols-2 gap-2">
                           <div className="rounded-lg border bg-muted/50 p-2">
                             <p className="text-[10px] text-muted-foreground">5M</p>
-                            <p className="text-sm font-semibold">$45K</p>
+                            <p className="text-sm font-semibold">
+                              {loadingDex ? 'Loading...' : (dexData?.volume?.m5 ? `$${Number(dexData.volume.m5).toLocaleString('en-US', { maximumFractionDigits: 2 })}` : '—')}
+                            </p>
                           </div>
                           <div className="rounded-lg border bg-muted/50 p-2">
                             <p className="text-[10px] text-muted-foreground">1H</p>
-                            <p className="text-sm font-semibold">$520K</p>
+                            <p className="text-sm font-semibold">
+                              {loadingDex ? 'Loading...' : (dexData?.volume?.h1 ? `$${Number(dexData.volume.h1).toLocaleString('en-US', { maximumFractionDigits: 2 })}` : '—')}
+                            </p>
                           </div>
                           <div className="rounded-lg border bg-muted/50 p-2">
                             <p className="text-[10px] text-muted-foreground">6H</p>
-                            <p className="text-sm font-semibold">$1.8M</p>
+                            <p className="text-sm font-semibold">
+                              {loadingDex ? 'Loading...' : (dexData?.volume?.h6 ? `$${Number(dexData.volume.h6).toLocaleString('en-US', { maximumFractionDigits: 2 })}` : '—')}
+                            </p>
                           </div>
                           <div className="rounded-lg border bg-muted/50 p-2">
                             <p className="text-[10px] text-muted-foreground">24H</p>
-                            <p className="text-sm font-semibold">$2.4M</p>
+                            <p className="text-sm font-semibold">
+                              {loadingDex ? 'Loading...' : (dexData?.volume?.h24 ? `$${Number(dexData.volume.h24).toLocaleString('en-US', { maximumFractionDigits: 2 })}` : '—')}
+                            </p>
                           </div>
                         </div>
                       </div>
