@@ -267,33 +267,344 @@ export default function TokenDetailPage() {
 
             {/* Main Content Grid */}
             <div className="grid gap-4 md:grid-cols-3">
-              {/* Full-width DEXscreener embed */}
-              <div className="col-span-3 md:col-span-3">
-                {/* DEXscreener embed (uses `mintAddress` from route `id`) */}
-                {mintAddress ? (
-                  <div className="relative" style={{ height: 'calc(100vh - var(--header-height))' }}>
-                    {!iframeLoaded && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-muted/60 z-10">
-                        <div className="h-8 w-8 rounded-full border-4 border-primary animate-spin" />
+              {/* Chart - 2/3 width */}
+              <Card className="md:col-span-2">
+                <CardHeader>
+                  <CardTitle>24-Hour Price Chart</CardTitle>
+                  <CardDescription>Candlestick chart with OHLC data</CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                  {mintAddress ? (
+                    <div className="relative h-[500px] w-full">
+                      <iframe
+                        src={`https://www.dexscreener.com/solana/${encodeURIComponent(mintAddress)}?embed=true`}
+                        title="DEXscreener chart"
+                        className="absolute inset-0 w-full h-full border-0 rounded"
+                        onLoad={() => setIframeLoaded(true)}
+                      />
+                    </div>
+                  ) : (
+                    <div className="h-[200px] flex items-center justify-center text-sm text-muted-foreground">
+                      No chart available
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Details Card - 1/3 width */}
+              <Card className="md:col-span-1">
+                <Tabs defaultValue="details" className="h-full w-full">
+                  <CardHeader className="pb-2">
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="details" className="text-sm font-medium">Details</TabsTrigger>
+                      <TabsTrigger value="security" className="text-sm font-medium">Security</TabsTrigger>
+                    </TabsList>
+                  </CardHeader>
+
+                  <TabsContent value="details" className="mt-0">
+                    <CardContent className="space-y-4 pt-2">
+                      {/* Contract Address Section */}
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-semibold">Contract Address</h3>
+                        <div className="flex items-start gap-2 rounded-lg border bg-muted/50 p-2">
+                          <p className="flex-1 break-all font-mono text-[10px] leading-relaxed">
+                            {contractAddress}
+                          </p>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-6 shrink-0"
+                            onClick={handleCopyCA}
+                          >
+                            {copiedCA ? (
+                              <IconCheck className="size-3 text-green-600" />
+                            ) : (
+                              <IconCopy className="size-3" />
+                            )}
+                          </Button>
+                        </div>
                       </div>
-                    )}
-                    <iframe
-                      src={`https://dexscreener.com/solana/${mintAddress}?embed=1&info=0&theme=dark`}
-                      title="Dexscreener Embed"
-                      onLoad={() => setIframeLoaded(true)}
-                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0, display: 'block' }}
-                      sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-                      allowFullScreen
-                    />
-                    {/* Visual overlay to hide DEXscreener footer/branding area */}
-                    <div className="pointer-events-none absolute left-0 right-0 bottom-0 h-12 bg-[#050508] z-20" />
-                  </div>
-                ) : (
-                  <div className="rounded-lg border bg-muted/50 p-6 text-center text-sm text-muted-foreground">
-                    No mint address provided in the URL.
-                  </div>
-                )}
-              </div>
+
+                      <Separator />
+
+                      {/* Price Section */}
+                      <div className="space-y-3">
+                        <h3 className="text-sm font-semibold">Price</h3>
+                        <div className="space-y-2">
+                          <div>
+                            <p className="text-[10px] text-muted-foreground">PRICE USD</p>
+                            <div className="flex items-baseline gap-2">
+                              <p className="text-lg font-bold">$0.00012</p>
+                              <Badge variant="outline" className="border-green-600/20 bg-green-600/10 text-[10px] text-green-600">
+                                +45.2%
+                              </Badge>
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-muted-foreground">PRICE SOL</p>
+                            <div className="flex items-baseline gap-2">
+                              <p className="text-sm font-bold">0.00092 SOL</p>
+                              <Badge variant="outline" className="border-green-600/20 bg-green-600/10 text-[10px] text-green-600">
+                                +42.8%
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Market Data Section */}
+                      <div className="space-y-3">
+                        <h3 className="text-sm font-semibold">Market Data</h3>
+                        <div className="space-y-1.5 text-xs">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Liquidity</span>
+                            <span className="font-semibold">$850K</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Market Cap</span>
+                            <span className="font-semibold">$12.5M</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">FDV</span>
+                            <span className="font-semibold">$15.8M</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Holders</span>
+                            <span className="font-semibold">2,847</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Volume Section */}
+                      <div className="space-y-3">
+                        <h3 className="text-sm font-semibold">Volume</h3>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="rounded-lg border bg-muted/50 p-2">
+                            <p className="text-[10px] text-muted-foreground">5M</p>
+                            <p className="text-sm font-semibold">$45K</p>
+                          </div>
+                          <div className="rounded-lg border bg-muted/50 p-2">
+                            <p className="text-[10px] text-muted-foreground">1H</p>
+                            <p className="text-sm font-semibold">$520K</p>
+                          </div>
+                          <div className="rounded-lg border bg-muted/50 p-2">
+                            <p className="text-[10px] text-muted-foreground">6H</p>
+                            <p className="text-sm font-semibold">$1.8M</p>
+                          </div>
+                          <div className="rounded-lg border bg-muted/50 p-2">
+                            <p className="text-[10px] text-muted-foreground">24H</p>
+                            <p className="text-sm font-semibold">$2.4M</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Transactions Section */}
+                      <div className="space-y-3">
+                        <h3 className="text-sm font-semibold">Transactions</h3>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="rounded-lg border bg-muted/50 p-2">
+                            <p className="text-[10px] text-muted-foreground">5M</p>
+                            <div className="flex gap-1.5 text-xs font-medium">
+                              <span className="text-green-600">42</span>
+                              <span className="text-red-600">18</span>
+                            </div>
+                          </div>
+                          <div className="rounded-lg border bg-muted/50 p-2">
+                            <p className="text-[10px] text-muted-foreground">1H</p>
+                            <div className="flex gap-1.5 text-xs font-medium">
+                              <span className="text-green-600">284</span>
+                              <span className="text-red-600">156</span>
+                            </div>
+                          </div>
+                          <div className="rounded-lg border bg-muted/50 p-2">
+                            <p className="text-[10px] text-muted-foreground">6H</p>
+                            <div className="flex gap-1.5 text-xs font-medium">
+                              <span className="text-green-600">1,245</span>
+                              <span className="text-red-600">892</span>
+                            </div>
+                          </div>
+                          <div className="rounded-lg border bg-muted/50 p-2">
+                            <p className="text-[10px] text-muted-foreground">24H</p>
+                            <div className="flex gap-1.5 text-xs font-medium">
+                              <span className="text-green-600">3,847</span>
+                              <span className="text-red-600">2,156</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </TabsContent>
+
+                  <TabsContent value="security" className="mt-0">
+                    <CardContent className="space-y-4 pt-2">
+                      {/* Overall Security Score */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-sm font-semibold">Security Score</h3>
+                          <Badge className="bg-green-600 text-white">Safe</Badge>
+                        </div>
+                        <div className="flex items-center gap-2 rounded-lg border bg-green-600/5 p-3">
+                          <IconShieldCheck className="size-8 text-green-600" />
+                          <div className="flex-1">
+                            <p className="text-2xl font-bold text-green-600">85/100</p>
+                            <p className="text-xs text-muted-foreground">Good security rating</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Contract Security */}
+                      <div className="space-y-3">
+                        <h3 className="text-sm font-semibold">Contract Security</h3>
+                        <div className="space-y-2">
+                          {/* Mint Authority */}
+                          <div className="flex items-center justify-between rounded-lg border p-2">
+                            <div className="flex items-center gap-2">
+                              <IconLock className="size-4 text-green-600" />
+                              <span className="text-xs">Mint Authority</span>
+                            </div>
+                            <Badge variant="outline" className="border-green-600/20 bg-green-600/10 text-green-600">
+                              Revoked
+                            </Badge>
+                          </div>
+
+                          {/* Freeze Authority */}
+                          <div className="flex items-center justify-between rounded-lg border p-2">
+                            <div className="flex items-center gap-2">
+                              <IconLock className="size-4 text-green-600" />
+                              <span className="text-xs">Freeze Authority</span>
+                            </div>
+                            <Badge variant="outline" className="border-green-600/20 bg-green-600/10 text-green-600">
+                              Revoked
+                            </Badge>
+                          </div>
+
+                          {/* LP Burned */}
+                          <div className="flex items-center justify-between rounded-lg border p-2">
+                            <div className="flex items-center gap-2">
+                              <IconShieldCheck className="size-4 text-green-600" />
+                              <span className="text-xs">LP Tokens</span>
+                            </div>
+                            <Badge variant="outline" className="border-green-600/20 bg-green-600/10 text-green-600">
+                              100% Burned
+                            </Badge>
+                          </div>
+
+                          {/* Owner Renounced */}
+                          <div className="flex items-center justify-between rounded-lg border p-2">
+                            <div className="flex items-center gap-2">
+                              <IconShieldCheck className="size-4 text-green-600" />
+                              <span className="text-xs">Ownership</span>
+                            </div>
+                            <Badge variant="outline" className="border-green-600/20 bg-green-600/10 text-green-600">
+                              Renounced
+                            </Badge>
+                          </div>
+
+                          {/* Top 10 Holders */}
+                          <div className="flex items-center justify-between rounded-lg border p-2">
+                            <div className="flex items-center gap-2">
+                              <IconShieldCheck className="size-4 text-yellow-600" />
+                              <span className="text-xs">Top 10 Holders</span>
+                            </div>
+                            <Badge variant="outline" className="border-yellow-600/20 bg-yellow-600/10 text-yellow-600">
+                              28.5%
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Audit Information */}
+                      <div className="space-y-3">
+                        <h3 className="text-sm font-semibold">Audit Information</h3>
+                        <div className="space-y-2 text-xs">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Contract Verified</span>
+                            <span className="font-semibold text-green-600">Yes</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Honeypot Test</span>
+                            <span className="font-semibold text-green-600">Passed</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Trading Enabled</span>
+                            <span className="font-semibold text-green-600">Yes</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Max TX Amount</span>
+                            <span className="font-semibold">No Limit</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Max Wallet</span>
+                            <span className="font-semibold">No Limit</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Risk Warnings */}
+                      <div className="space-y-3">
+                        <h3 className="text-sm font-semibold">Risk Analysis</h3>
+                        <div className="space-y-2">
+                          <div className="flex items-start gap-2 rounded-lg border border-yellow-600/20 bg-yellow-600/5 p-2">
+                            <IconShieldX className="size-4 shrink-0 text-yellow-600" />
+                            <div>
+                              <p className="text-xs font-medium">Moderate Risk</p>
+                              <p className="text-[10px] text-muted-foreground">Top holders control significant percentage</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-2 rounded-lg border border-green-600/20 bg-green-600/5 p-2">
+                            <IconShieldCheck className="size-4 shrink-0 text-green-600" />
+                            <div>
+                              <p className="text-xs font-medium">Low Risk</p>
+                              <p className="text-[10px] text-muted-foreground">All critical authorities revoked</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Contract Details */}
+                      <div className="space-y-3">
+                        <h3 className="text-sm font-semibold">Contract Details</h3>
+                        <div className="space-y-2 text-xs">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Created</span>
+                            <span className="font-semibold">15 days ago</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Creator</span>
+                            <span className="font-mono font-semibold">8pLq...3wMs</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Token Standard</span>
+                            <span className="font-semibold">SPL Token</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Decimals</span>
+                            <span className="font-semibold">9</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Total Supply</span>
+                            <span className="font-semibold">1,000,000,000</span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </TabsContent>
+                </Tabs>
+              </Card>
             </div>
           </div>
         </div>
