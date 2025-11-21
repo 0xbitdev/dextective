@@ -107,6 +107,11 @@ const data = {
       icon: IconBook,
     },
     {
+      name: "Whitepaper",
+      url: "/Dexlite%20Litepaper%20V1.0.pdf",
+      icon: IconFileAi,
+    },
+    {
       name: "API Key",
       url: "/api-key",
       icon: IconKey,

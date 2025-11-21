@@ -167,50 +167,7 @@ export default function TokenDetailPage() {
     setTimeout(() => setCopiedCA(false), 2000)
   }
 
-   const PRICE_CHART_ID = 'price-chart-widget-container';
-    const containerRef = useRef(null);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const loadWidget = () => {
-      const w: any = window as any
-      if (typeof w.createMyWidget === 'function') {
-        w.createMyWidget(PRICE_CHART_ID, {
-          autoSize: true,
-          chainId: 'solana',
-          tokenAddress: contractAddress,
-          showHoldersChart: true,
-          defaultInterval: '1D',
-          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Etc/UTC',
-          theme: 'moralis',
-          locale: 'en',
-          showCurrencyToggle: true,
-          currency: 'usd',
-          hideLeftToolbar: false,
-          hideTopToolbar: false,
-          hideBottomToolbar: false
-        });
-      } else {
-        console.error('createMyWidget function is not defined.');
-      }
-    };
-
-    if (!document.getElementById('moralis-chart-widget')) {
-      const script = document.createElement('script');
-      script.id = 'moralis-chart-widget';
-      script.src = 'https://moralis.com/static/embed/chart.js';
-      script.type = 'text/javascript';
-      script.async = true;
-      script.onload = loadWidget;
-      script.onerror = () => {
-        console.error('Failed to load the chart widget script.');
-      };
-      document.body.appendChild(script);
-    } else {
-      loadWidget();
-    }
-  }, []);
+  // Chart widget replaced with DEXscreener iframe (Moralis embed requires paid plan)
 
   const isLoadingAll = loadingMeta || loadingMarketActivity || loadingDex
 
@@ -316,19 +273,25 @@ export default function TokenDetailPage() {
             <div className="grid gap-4 md:grid-cols-3">
               {/* Chart - 2/3 width */}
               <Card className="md:col-span-2 h-full flex">
-                {mintAddress ? (
-                  <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
-                    <div
-                      id={PRICE_CHART_ID}
-                      ref={containerRef}
-                      className="w-full h-full"
-                    />
-                  </div>
-                ) : (
-                  <div className="h-[200px] flex items-center justify-center text-sm text-muted-foreground">
-                    No chart available
-                  </div>
-                )}
+                <CardHeader>
+                  <CardTitle>24-Hour Price Chart</CardTitle>
+                  <CardDescription>Candlestick chart with OHLC data</CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                  {mintAddress ? (
+                    <div className="relative h-[500px] w-full">
+                      <iframe
+                        src={`https://www.dexscreener.com/solana/${encodeURIComponent(mintAddress)}?embed=true`}
+                        title="DEXscreener chart"
+                        className="absolute inset-0 w-full h-full border-0 rounded"
+                      />
+                    </div>
+                  ) : (
+                    <div className="h-[200px] flex items-center justify-center text-sm text-muted-foreground">
+                      No chart available
+                    </div>
+                  )}
+                </CardContent>
               </Card>
 
               {/* Details Card - 1/3 width */}
